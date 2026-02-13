@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Header\LRUCache.h" />
     <ClInclude Include="Header\ReadWriteLock.h" />
     <ClInclude Include="Header\ThreadPool.h" />
     <ClInclude Include="Header\TimerWheel.h" />
