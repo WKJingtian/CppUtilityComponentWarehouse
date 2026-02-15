@@ -127,8 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Header\IocpEpoll.h" />
     <ClInclude Include="Header\LRUCache.h" />
     <ClInclude Include="Header\ReadWriteLock.h" />
+    <ClInclude Include="Header\RBTree.h" />
+    <ClInclude Include="Header\Singleton.h" />
     <ClInclude Include="Header\ThreadPool.h" />
     <ClInclude Include="Header\TimerWheel.h" />
   </ItemGroup>
