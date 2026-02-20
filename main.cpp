@@ -1,16 +1,26 @@
+#include <cassert>
 #include <iostream>
-#include "Header/LRUCache.h"
+#include "Header/LockFreeQueue.h"
 
 int main(int argc, char** args)
 {
-	std::cout << "Hello World" << std::endl;
+    (void)argc;
+    (void)args;
 
-	LRUCache<int, int> testCache = LRUCache<int, int>(3);
+    LockFreeQueue<int> q;
+    int value = 0;
 
-	testCache.Put(1, 1);
-	testCache.Put(2, 2);
-	testCache.Put(3, 3);
-	std::cout << testCache.Get(1).IsValid() << std::endl;
+    assert(!q.Dequeue(value));
 
-	return 0;
+    q.Enqueue(1);
+    q.Enqueue(2);
+    q.Enqueue(3);
+
+    assert(q.Dequeue(value) && value == 1);
+    assert(q.Dequeue(value) && value == 2);
+    assert(q.Dequeue(value) && value == 3);
+    assert(!q.Dequeue(value));
+
+    std::cout << "LockFreeQueue basic test passed." << std::endl;
+    return 0;
 }
