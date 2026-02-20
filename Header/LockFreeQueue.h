@@ -20,21 +20,21 @@ public:
     LockFreeQueue()
     {
         Node* dummy = new Node();
-        _head.store(dummy, std::memory_order_seq_cst);
-        _tail.store(dummy, std::memory_order_seq_cst);
+        _head.store(dummy, std::memory_order_relaxed);
+        _tail.store(dummy, std::memory_order_relaxed);
     }
     
     ~LockFreeQueue()
     {
-        Node* current = _head.load(std::memory_order_seq_cst);
+        Node* current = _head.load(std::memory_order_relaxed);
         while (current)
         {
-            Node* next = current->next.load(std::memory_order_seq_cst);
+            Node* next = current->next.load(std::memory_order_relaxed);
             delete current;
             current = next;
         }
-        _head.store(nullptr, std::memory_order_seq_cst);
-        _tail.store(nullptr, std::memory_order_seq_cst);
+        _head.store(nullptr, std::memory_order_relaxed);
+        _tail.store(nullptr, std::memory_order_relaxed);
     }
     
     void Enqueue(const T& data)
@@ -43,21 +43,30 @@ public:
         Node* oldTail = nullptr;
         while (1)
         {
-            oldTail = _tail.load(std::memory_order_seq_cst);
-            Node* next = oldTail->next.load(std::memory_order_seq_cst);
-            if (oldTail == _tail.load(std::memory_order_seq_cst))
+            oldTail = _tail.load(std::memory_order_acquire);
+            Node* next = oldTail->next.load(std::memory_order_acquire);
+            if (oldTail == _tail.load(std::memory_order_acquire))
             {
                 if (next == nullptr)
                 {
-                    if (oldTail->next.compare_exchange_weak(next, newNode, std::memory_order_seq_cst))
+                    if (oldTail->next.compare_exchange_weak(
+                            next, newNode,
+                            std::memory_order_release,
+                            std::memory_order_relaxed))
                     {
-                        _tail.compare_exchange_weak(oldTail, newNode, std::memory_order_seq_cst);
+                        _tail.compare_exchange_weak(
+                            oldTail, newNode,
+                            std::memory_order_release,
+                            std::memory_order_relaxed);
                         return;
                     }
                 }
                 else
                 {
-                    _tail.compare_exchange_weak(oldTail, next, std::memory_order_seq_cst);
+                    _tail.compare_exchange_weak(
+                        oldTail, next,
+                        std::memory_order_release,
+                        std::memory_order_relaxed);
                 }
             }
         }
@@ -67,11 +76,11 @@ public:
     {
         while (1)
         {
-            Node* currentHead = _head.load(std::memory_order_seq_cst);
-            Node* currentTail = _tail.load(std::memory_order_seq_cst);
-            Node* headNext = currentHead->next.load(std::memory_order_seq_cst);
+            Node* currentHead = _head.load(std::memory_order_acquire);
+            Node* currentTail = _tail.load(std::memory_order_acquire);
+            Node* headNext = currentHead->next.load(std::memory_order_acquire);
             
-            if (currentHead == _head.load(std::memory_order_seq_cst))
+            if (currentHead == _head.load(std::memory_order_acquire))
             {
                 if (currentHead == currentTail)
                 {
@@ -79,11 +88,17 @@ public:
                     {
                         return false;
                     }
-                    _tail.compare_exchange_weak(currentTail, headNext, std::memory_order_seq_cst);
+                    _tail.compare_exchange_weak(
+                        currentTail, headNext,
+                        std::memory_order_release,
+                        std::memory_order_relaxed);
                 }
                 else
                 {
-                    if (_head.compare_exchange_weak(currentHead, headNext, std::memory_order_seq_cst))
+                    if (_head.compare_exchange_weak(
+                            currentHead, headNext,
+                            std::memory_order_acq_rel,
+                            std::memory_order_relaxed))
                     {
                         out = headNext->data;
                         delete currentHead;
