@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClInclude Include="Header\CoFSM.h" />
     <ClInclude Include="Header\LockFreeQueue.h" />
+    <ClInclude Include="Header\Logger.h" />
     <ClInclude Include="Header\LRUCache.h" />
     <ClInclude Include="Header\ReadWriteLock.h" />
     <ClInclude Include="Header\RBTree.h" />
